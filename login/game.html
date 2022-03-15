@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css"></style>
+    <style >
+        body{
+            background-image: url("lovepik-color-checkered-background-picture_501376627.jpg");
+            background-size: 100%;
+            color: white;
+            font-family: Arial;
+        }
+        #myCanvas {
+            border:5px solid black;
+        }
+        #canvas2{
+            background-image: url("../Snake.png");
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+<table>
+    <tr>
+        <th>Điểm cao nhất</th>
+        <td><h3 id="stt1"></h3></td>
+    </tr>
+</table>
+<h4 id="namePlayer"></h4>
+<h4>Soccer :<span class="score_valun">0</span></h4>
+<center><canvas id="myCanvas" width="420" height="420"></canvas>
+<canvas id="canvas2" width="150" height="150"> </canvas></center>
+<script type="text/javascript" >
+    // khai báo biến
+   let a= document.getElementById('namePlayer').innerHTML= window.localStorage.getItem('userKey')
+    alert('Welcome '+a+' to my game')
+    const canvas = document.querySelector('#myCanvas')
+    const ctx = canvas.getContext("2d");
+    const scale = 20
+    const rows = canvas.height / scale;
+    const columns = canvas. width / scale;
+    let snake ;
+    let food;
+    let fps ;
+    let max = [];
+    let audio1 = new Audio('audio/begin.mp3')
+    window.onload = function () {
+        startGame();
+
+    }
+    window.addEventListener('keydown',((evt) =>{
+        const direction = evt.key.replace('Arrow','')
+        ;snake.changeDirection(direction)
+    }
+    )
+    )
+    // bắt đầu
+    function startGame() {
+        audio1.play()
+        snake = new Snake_();
+        food = new Food_();
+        food.pickLocation()
+        fps =setInterval(function (){
+            document.querySelector(".score_valun").innerHTML=snake.total
+            ctx.clearRect(0,0,canvas.width,canvas.height )
+            window.localStorage.getItem("passKey")
+            snake.update();
+            snake.draw();
+            food.draw()
+
+            snake.checkCollision()
+            if(snake.eat(food)){
+                food.pickLocation()
+            }
+        },150);
+
+    }
+    // thức ăn
+    function Food_() {
+        this.x;
+        this.y;
+        this.pickLocation =function () {
+            this.x = (Math.floor(Math.random()*rows*1)*scale);
+            this.y = (Math.floor(Math.random()*columns*1)*scale);
+        }
+        this.draw =function () {
+            ctx.fillStyle ='black'
+            ctx.fillRect(this.x,this.y,scale,scale);
+        }
+    }
+    // Rắn
+    function Snake_() {
+        this.x =0
+        this.y =0
+        this.xspeed =0
+        this.yspeed =0
+        this.total =0
+        this.tail = [];
+        this.rotation ='';
+        this.draw = function (){
+            ctx.fillStyle = 'red'
+            for (let i=0;i<this.tail.length;i++) {
+                ctx.fillRect(this.tail[i].x,this.tail[i].y,scale,scale)
+            }
+            ctx.fillRect (this.x , this.y,scale,scale)
+        }
+        //độ dài rắn
+        this.update = function (){
+            for (let i=0;i<this.tail.length-1;i++){
+                this.tail[i] = this.tail[i+1]
+            }
+
+            this.tail[this.total-1] = {x:this.x,y: this.y}
+            this.x += this.xspeed ;
+            this.y += this.yspeed ;
+            if(this.x >canvas.width - scale){
+                this.x =0
+            }
+            if (this.x < 0){
+                this.x = canvas.width - scale
+            }
+            if(this.y >canvas.height - scale){
+                this.y =0
+            }
+            if (this.y < 0){
+                this.y = canvas.height - scale
+            }
+        }
+        // di chuyển
+        this.changeDirection=function(direction){
+            switch(direction){
+                case "Up":
+                    this.yspeed =-scale*1;
+                    this.xspeed =0;
+                    break;
+                case "Down":
+                    this.yspeed =scale*1;
+                    this.xspeed =0;
+                    break;
+                case "Left":
+                    this.xspeed = -scale*1;
+                    this.yspeed =0;
+                    break;
+                case "Right":
+                    this.xspeed = scale*1;
+                    this.yspeed =0;
+                    break;
+            }
+        }
+        // cộng điểm thức ăn
+        this.eat =function (food) {
+            if (this.x ===food.x && this.y === food.y){
+                this.total++
+               return true
+            }
+            return false
+        }
+        // check over
+        this.checkCollision = function () {
+            for (let i=0;i<this.tail.length;i++){
+                if(this.x==this.tail[i].x && this.y==this.tail[i].y){
+
+                    if (max.length<3){
+                        max.push(snake.total)
+                    }else{
+                        max.sort()
+                        if(snake.total>max[0]){
+                            max[0]=snake.total
+                        }
+                    }
+                    document.getElementById("stt1").innerHTML = max
+                    clearInterval(fps)
+                    startGame()
+                    alert("GAME OVER")
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>
